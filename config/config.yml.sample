@@ -1,0 +1,14 @@
+---
+:consumer_key: 'consumer key'
+:consumer_secret: 'consumer secret'
+:accounts:
+  :base_hostname:
+    :oauth_token: 'oauth token'
+    :oauth_secret: 'oauth secret'
+    :days_ago: 30
+    :note_count:
+      :max 1000
+      :min: 100
+    :type:
+      - photo
+      - quote
