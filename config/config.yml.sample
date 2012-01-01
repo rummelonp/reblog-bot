@@ -12,3 +12,4 @@
     :type:
       - photo
       - quote
+    :every: 30.miutes
