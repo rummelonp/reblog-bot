@@ -8,7 +8,7 @@ module ReblogBot
       TYPES = %w{photo quote text link video audio}.freeze
 
       def initialize(types = TYPES)
-        @_types = types.map(&:to_s).select{|t| types.include? t}
+        @_types = types.map(&:to_s).select{|t| TYPES.include? t}
       end
 
       def match(post)
