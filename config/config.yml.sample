@@ -4,7 +4,7 @@
 :accounts:
   :base_hostname:
     :oauth_token: 'oauth token'
-    :oauth_secret: 'oauth secret'
+    :oauth_token_secret: 'oauth secret'
     :days_ago: 30
     :note_count:
       :max 1000

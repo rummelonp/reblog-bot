@@ -1,24 +1,13 @@
 
 module ReblogBot
   module Helpers
-    def consumer(config)
-      OAuth::Consumer.new(
-        config.consumer_key,
-        config.consumer_secret,
-        site: 'http://api.tumblr.com',
-      )
-    end
-
-    def access_token(config, account)
-      OAuth::AccessToken.new(
-        consumer(config),
-        account.oauth_token,
-        account.oauth_secret,
-      )
-    end
-
     def client(config, account)
-      Tumblife.new access_token(config, account)
+      Tumblife.configure {|c|
+        c.consumer_key = config.consumer_key
+        c.consumer_secret = config.consumer_secret
+        c.oauth_token = account.oauth_token
+        c.oauth_token_secret = account.oauth_token_secret
+      }.client
     end
   end
 end
