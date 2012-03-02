@@ -19,7 +19,11 @@ module ReblogBot
         @client = client @config, @account
 
         @reblogged_log_name = "data/#{name}.reblogged.yml"
-        @reblogged = YAML.load_file @reblogged_log_name rescue []
+        begin
+          @reblogged = YAML.load_file @reblogged_log_name
+        rescue
+          @reblogged = []
+        end
 
         @filters = []
         Filters.filters.each do |key, filter|
