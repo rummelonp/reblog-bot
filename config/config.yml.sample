@@ -7,9 +7,9 @@
     :oauth_token_secret: 'oauth secret'
     :days_ago: 30
     :note_count:
-      :max 1000
+      :max: 1000
       :min: 100
     :type:
       - photo
       - quote
-    :every: 30.miutes
+    :every: 30.minutes
