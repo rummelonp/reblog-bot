@@ -29,15 +29,23 @@ module ReblogBot
 
       def follow_back
         (@followers.users - @following.blogs).each do |u|
-          say "follow: #{u.url}"
-          @client.follow url: u.url
+          begin
+            say "follow: #{u.url}"
+            @client.follow url: u.url
+          rescue
+            shell.error $!.inspect
+          end
         end
       end
 
       def unfollow
         (@following.blogs - @followers.users).each do |u|
-          say "unfollow: #{u.url}"
-          @client.unfollow url: u.url
+          begin
+            say "unfollow: #{u.url}"
+            @client.unfollow url: u.url
+          rescue
+            shell.error $!.inspect
+          end
         end
       end
     end
