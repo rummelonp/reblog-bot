@@ -1,3 +1,5 @@
-/config/config.yml
-/data/*.yml
-*.log
+.bundle/
+config/config.yml
+data/*.yml
+log/*.log
+vendor/
