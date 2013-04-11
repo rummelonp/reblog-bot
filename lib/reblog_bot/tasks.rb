@@ -2,16 +2,16 @@
 
 module ReblogBot
   module Tasks
-    class << self
-      def tasks
-        @_tasks ||= {}
-      end
-
-      def add_task(name, filter)
-        tasks[name] = filter
-      end
+    def self.mappings
+      @mappings ||= {}
     end
 
-    Dir[File.dirname(__FILE__) + '/tasks/*.rb'].each {|f| require f}
+    def self.register(task_name, klass)
+      mappings[task_name.to_sym] = klass
+    end
   end
+end
+
+Dir[File.dirname(__FILE__) + '/tasks/*.rb'].each do |file|
+  require file
 end

@@ -1,50 +1,51 @@
 # -*- coding: utf-8 -*-
 
+require 'reblog_bot/filters'
+require 'reblog_bot/tasks/actions'
+require 'thor/group'
+
 module ReblogBot
   module Tasks
     class FollowBack < Thor::Group
-      Tasks.add_task :followback, self
+      Tasks.register :followback, self
 
-      include ReblogBot::Actions
-      include ReblogBot::Helpers
+      include Actions
 
-      argument :name, :desc => 'Account name'
-
-      require_arguments!
-
-      def initialize(*args)
-        super
-        @config = ReblogBot::ConfigLoader.load
-        @account = @config.accounts[name]
-        @client = client @config, @account
+      def self.banner
+        'reblog_bot.rb followback [account name]'
       end
 
-      def followers
-        @followers = @client.followers "#{name}.tumblr.com"
-      end
+      desc 'follow back & unfollow users'
 
-      def following
-        @following = @client.following
+      argument :name, :desc => 'Account name', :optional => true
+
+      def setup
+        help! unless name
+        @client = client(name)
+        @following = @client.following_all.map(&:url)
+        @followers = @client.followers_all("#{name}.tumblr.com").map(&:url)
+      rescue
+        error! $!.message
       end
 
       def follow_back
-        (@followers.users - @following.blogs).each do |u|
+        (@followers - @following).each do |u|
           begin
-            say "follow: #{u.url}"
-            @client.follow url: u.url
+            say "#{now} follow: #{u}"
+            @client.follow(u)
           rescue
-            shell.error $!.inspect
+            error $!.inspect
           end
         end
       end
 
       def unfollow
-        (@following.blogs - @followers.users).each do |u|
+        (@following - @followers).each do |u|
           begin
-            say "unfollow: #{u.url}"
-            @client.unfollow url: u.url
+            say "#{now} unfollow: #{u}"
+            @client.unfollow(u)
           rescue
-            shell.error $!.inspect
+            error $!.inspect
           end
         end
       end

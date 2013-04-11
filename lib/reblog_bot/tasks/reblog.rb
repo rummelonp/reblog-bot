@@ -1,76 +1,78 @@
 # -*- coding: utf-8 -*-
 
+require 'reblog_bot/tasks/actions'
+require 'thor/group'
+
 module ReblogBot
   module Tasks
     class Reblog < Thor::Group
-      Tasks.add_task :reblog, self
+      Tasks.register :reblog, self
 
-      include ReblogBot::Actions
-      include ReblogBot::Helpers
+      include Actions
 
-      argument :name, :desc => 'Account name'
+      def self.banner
+        'reblog_bot.rb reblog [account name]'
+      end
 
-      require_arguments!
+      desc 'random reblog by configuration'
 
-      def initialize(*args)
-        super
-        @config = ReblogBot::ConfigLoader.load
-        @account = @config.accounts[name]
-        @client = client @config, @account
+      argument :name, :desc => 'Account name', :optional => true
 
-        @reblogged_log_name = "data/#{name}.reblogged.yml"
-        begin
-          @reblogged = YAML.load_file @reblogged_log_name
-        rescue
-          @reblogged = []
-        end
+      def setup
+        help! unless name
+        @config = env.config[:accounts][name.to_sym]
+        @client = client(name)
+
+        @reblogged_log_name = "#{name}.reblogged.yml"
+        @reblogged = env.load_data(@reblogged_log_name)
 
         @filters = []
-        Filters.filters.each do |key, filter|
-          if @account.key? key
-            @filters << filter.new(@account[key])
-          end
+        Filters.mappings.each do |key, filter|
+          @filters << filter.new(@config[key]) if @config.key?(key)
         end
+      rescue
+        error! $!.message
       end
 
       def from
-        following = @client.following
-        user = following.blogs[(following.blogs.size * rand).to_i]
+        following = @client.following_all
+        user = following[(following.size * rand).to_i]
         @base_hostname = "#{user.name}.tumblr.com"
-        @info = @client.info @base_hostname
+        @blog_info = @client.blog_info(@base_hostname)
       end
 
       def post
-        offset = (@info.blog.posts * rand).to_i
-        data = @client.posts(@base_hostname, offset: offset)
+        offset = (@blog_info.blog.posts * rand).to_i
+        data = @client.posts(@base_hostname, :offset => offset)
         @post = data.posts.select {|p|
-          @filters.all? {|f| f.match p}
+          @filters.all? { |f| f.match(p) }
         }.select{|p|
-          not @reblogged.include? p.reblog_key
+          !@reblogged.include?(p.reblog_key)
         }.first
       end
 
       def reblog
         return unless @post
         begin
-          say "from: #{@base_hostname}"
-          say "url: #{@post.post_url}"
-          say "type: #{@post.type}"
-          say "note: #{@post.note_count}"
-          say "date: #{@post.date}"
-          @client.reblog_post "#{name}.tumblr.com", {
-            id: @post.id,
-            reblog_key: @post.reblog_key,
-            comment: Date.parse(@post.date)
-          }
+          say "#{now} from: #{@base_hostname}"
+          say "#{now} url: #{@post.post_url}"
+          say "#{now} type: #{@post.type}"
+          say "#{now} note: #{@post.note_count}"
+          say "#{now} date: #{@post.date}"
+          @client.reblog(
+            "#{name}.tumblr.com",
+            @post.id,
+            @post.reblog_key,
+            Date.parse(@post.date),
+          )
           @reblogged << @post.reblog_key
         rescue
-          shell.error $!.inspect
+          error $!.inspect
         end
       end
 
       def teardown
-        YAML.dump(@reblogged, File.open(@reblogged_log_name, 'w'))
+        env.dump_data(@reblogged_log_name, @reblogged)
       end
     end
   end

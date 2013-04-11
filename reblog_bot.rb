@@ -2,12 +2,8 @@
 # -*- coding: utf-8 -*-
 
 root = File.dirname(__FILE__)
-$LOAD_PATH.unshift File.join(root, 'lib')
-ENV['BUNDLE_GEMFILE'] ||= File.join(root, 'Gemfile')
+$:.unshift File.join(root, 'lib')
 
-require 'rubygems'
-require 'bundler'
-Bundler.require
 require 'reblog_bot'
 
-ReblogBot::Cli.start
+ReblogBot::Tasks::Cli.start
