@@ -5,7 +5,7 @@ $:.unshift File.join(root, 'lib')
 
 require 'reblog_bot'
 
-job_type :reblog_bot, 'cd :path && ./reblog_bot.rb :task :output'
+job_type :reblog_bot, 'cd :path && bundle exec ruby reblog_bot.rb :task :output'
 
 @config = ReblogBot::Environment.instance.config
 @config[:accounts].each do |name, account|
